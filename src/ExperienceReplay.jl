@@ -1,6 +1,6 @@
 module ExperienceReplay
 
-export Buffer, store!, get_batch!, setp!, resetp!
+export FlatBuffer, ImageBuffer, Buffer, store!, get_batch!, setp!, resetp!
 
 using StatsBase: sample, weights
 
@@ -101,7 +101,7 @@ end
 
 function get_batch!(buffer::ImageBuffer, n)
     idxs = 1:buffer.len
-    idxs = sample(idxs, weights(1 ./ buffer.ps[idxs]), n; replace=false, ordered=false)
+    idxs = sample(idxs, pweights(buffer.ps[idxs]), n; replace=false, ordered=false)
     buffer.last_idxs = idxs
     return buffer.s[:, :, :, idxs], buffer.a[:, idxs], buffer.r[:, idxs], buffer.s′[:, :, :, idxs], buffer.t[:, idxs]
 end
