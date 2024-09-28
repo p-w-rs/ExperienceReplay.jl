@@ -1,4 +1,9 @@
 {
   "references": null,
-  "tags": ["Data Structures", "Utilities", "Reinforcment Learning", "Julia"]
+  "tags": [
+    "Data Structure",
+    "Utility Library",
+    "Reinforcment Learning",
+    "Julia"
+  ]
 }

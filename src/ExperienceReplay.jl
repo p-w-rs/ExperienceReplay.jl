@@ -34,7 +34,7 @@ mutable struct ImageBuffer <: AbstractBuffer
     actionf::Function
 end
 
-function Buffer(state_dim::Tuple{Int}, action_dim::Int, maxl::Int; discrete::Bool=true)
+function Buffer(state_dim::Tuple{Int}, action_dim::Int, maxl::Int; discrete::Bool=true)::FlatBuffer
     return FlatBuffer(
         zeros(Float32, state_dim..., maxl),
         zeros(Float32, action_dim, maxl),
@@ -46,7 +46,7 @@ function Buffer(state_dim::Tuple{Int}, action_dim::Int, maxl::Int; discrete::Boo
     )
 end
 
-function Buffer(state_dim::Tuple{Int,Int,Int}, action_dim::Int, maxl::Int; discrete::Bool=true)
+function Buffer(state_dim::Tuple{Int,Int,Int}, action_dim::Int, maxl::Int; discrete::Bool=true)::ImageBuffer
     return ImageBuffer(
         zeros(Float32, state_dim..., maxl),
         zeros(Float32, action_dim, maxl),
@@ -58,7 +58,7 @@ function Buffer(state_dim::Tuple{Int,Int,Int}, action_dim::Int, maxl::Int; discr
     )
 end
 
-function Buffer(state_dim::Tuple{Int,Int}, action_dim::Int, maxl::Int; discrete::Bool=true)
+function Buffer(state_dim::Tuple{Int,Int}, action_dim::Int, maxl::Int; discrete::Bool=true)::ImageBuffer
     return ImageBuffer(
         zeros(Float32, state_dim..., 1, maxl),
         zeros(Float32, action_dim, maxl),
@@ -70,7 +70,7 @@ function Buffer(state_dim::Tuple{Int,Int}, action_dim::Int, maxl::Int; discrete:
     )
 end
 
-function store!(buffer::FlatBuffer, s, a, r, s′, t; p=1.0f0)
+function store!(buffer::FlatBuffer, s, a, r, s′, t; p=1.0f0)::Void
     buffer.s[:, buffer.idx] .= s
     buffer.a[:, buffer.idx] .= buffer.actionf(a)
     buffer.r[:, buffer.idx] .= r
@@ -81,7 +81,7 @@ function store!(buffer::FlatBuffer, s, a, r, s′, t; p=1.0f0)
     buffer.len = min(buffer.len + 1, buffer.maxl)
 end
 
-function store!(buffer::ImageBuffer, s, a, r, s′, t; p=1.0f0)
+function store!(buffer::ImageBuffer, s, a, r, s′, t; p=1.0f0)::Void
     buffer.s[:, :, :, buffer.idx] .= s
     buffer.a[:, buffer.idx] .= buffer.actionf(a)
     buffer.r[:, buffer.idx] .= r
@@ -92,25 +92,25 @@ function store!(buffer::ImageBuffer, s, a, r, s′, t; p=1.0f0)
     buffer.len = min(buffer.len + 1, buffer.maxl)
 end
 
-function get_batch!(buffer::FlatBuffer, n)
+function get_batch!(buffer::FlatBuffer, n::Int)::Tuple{Matrix{Float32}, Matrix{Float32}, Matrix{Float32}, Matrix{Float32}, Matrix{Float32}}
     idxs = 1:buffer.len
-    idxs = sample(idxs, weights(1 ./ buffer.ps[idxs]), n; replace=false, ordered=false)
+    idxs = sample(idxs, weights(buffer.ps[idxs]), n; replace=false, ordered=false)
     buffer.last_idxs = idxs
     return buffer.s[:, idxs], buffer.a[:, idxs], buffer.r[:, idxs], buffer.s′[:, idxs], buffer.t[:, idxs]
 end
 
-function get_batch!(buffer::ImageBuffer, n)
+function get_batch!(buffer::ImageBuffer, n::Int)::Tuple{Array{Float32,4}, Matrix{Float32}, Matrix{Float32}, Array{Float32,4}, Matrix{Float32}}
     idxs = 1:buffer.len
-    idxs = sample(idxs, pweights(buffer.ps[idxs]), n; replace=false, ordered=false)
+    idxs = sample(idxs, weights(buffer.ps[idxs]), n; replace=false, ordered=false)
     buffer.last_idxs = idxs
     return buffer.s[:, :, :, idxs], buffer.a[:, idxs], buffer.r[:, idxs], buffer.s′[:, :, :, idxs], buffer.t[:, idxs]
 end
 
-function setp!(buffer::AbstractBuffer, ps)
+function setp!(buffer::AbstractBuffer, ps::Vector{Float32})::Void
     buffer.ps[buffer.last_idxs] .= ps
 end
 
-function resetp!(buffer::AbstractBuffer; p=1.0f0)
+function resetp!(buffer::AbstractBuffer; p::Float32=1.0f0)::Void
     buffer.ps[:] .= p
 end
 
