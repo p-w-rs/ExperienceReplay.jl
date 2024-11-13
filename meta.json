@@ -1,4 +1,5 @@
 {
+  "description": "Julia library the implements the experience replay buffer data structure for reinforcement learning.",
   "status": "DONE",
   "references": null,
   "tags": [
