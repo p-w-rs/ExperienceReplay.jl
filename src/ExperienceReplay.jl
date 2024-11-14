@@ -34,6 +34,18 @@ mutable struct ImageBuffer <: AbstractBuffer
     actionf::Function
 end
 
+function Buffer(state_dim::Int, action_dim::Int, maxl::Int; discrete::Bool=true)::FlatBuffer
+    return FlatBuffer(
+        zeros(Float32, state_dim, maxl),
+        zeros(Float32, action_dim, maxl),
+        zeros(Float32, 1, maxl),
+        zeros(Float32, state_dim..., maxl),
+        zeros(Float32, 1, maxl),
+        ones(Float32, maxl),
+        [], 1, 0, maxl, discrete ? x -> onehot(x, 1:action_dim) : x -> x
+    )
+end
+
 function Buffer(state_dim::Tuple{Int}, action_dim::Int, maxl::Int; discrete::Bool=true)::FlatBuffer
     return FlatBuffer(
         zeros(Float32, state_dim..., maxl),
@@ -92,14 +104,14 @@ function store!(buffer::ImageBuffer, s, a, r, s′, t; p=1.0f0)::Void
     buffer.len = min(buffer.len + 1, buffer.maxl)
 end
 
-function get_batch!(buffer::FlatBuffer, n::Int)::Tuple{Matrix{Float32}, Matrix{Float32}, Matrix{Float32}, Matrix{Float32}, Matrix{Float32}}
+function get_batch!(buffer::FlatBuffer, n::Int)::Tuple{Matrix{Float32},Matrix{Float32},Matrix{Float32},Matrix{Float32},Matrix{Float32}}
     idxs = 1:buffer.len
     idxs = sample(idxs, weights(buffer.ps[idxs]), n; replace=false, ordered=false)
     buffer.last_idxs = idxs
     return buffer.s[:, idxs], buffer.a[:, idxs], buffer.r[:, idxs], buffer.s′[:, idxs], buffer.t[:, idxs]
 end
 
-function get_batch!(buffer::ImageBuffer, n::Int)::Tuple{Array{Float32,4}, Matrix{Float32}, Matrix{Float32}, Array{Float32,4}, Matrix{Float32}}
+function get_batch!(buffer::ImageBuffer, n::Int)::Tuple{Array{Float32,4},Matrix{Float32},Matrix{Float32},Array{Float32,4},Matrix{Float32}}
     idxs = 1:buffer.len
     idxs = sample(idxs, weights(buffer.ps[idxs]), n; replace=false, ordered=false)
     buffer.last_idxs = idxs
