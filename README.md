@@ -23,9 +23,7 @@ Or install with Pkg:
 
 ```julia
 using Pkg
-Pkg.add("https://github.com/p-w-rs/ExperienceReplay.jl.git")
-
-using ExperienceReplay
+Pkg.add("ExperienceReplay")
 ```
 
 ## Usage
