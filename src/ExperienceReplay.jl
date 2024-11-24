@@ -82,7 +82,7 @@ function Buffer(state_dim::Tuple{Int,Int}, action_dim::Int, maxl::Int; discrete:
     )
 end
 
-function store!(buffer::FlatBuffer, s, a, r, s′, t; p=1.0f0)::Void
+function store!(buffer::FlatBuffer, s, a, r, s′, t; p=1.0f0)
     buffer.s[:, buffer.idx] .= s
     buffer.a[:, buffer.idx] .= buffer.actionf(a)
     buffer.r[:, buffer.idx] .= r
@@ -93,7 +93,7 @@ function store!(buffer::FlatBuffer, s, a, r, s′, t; p=1.0f0)::Void
     buffer.len = min(buffer.len + 1, buffer.maxl)
 end
 
-function store!(buffer::ImageBuffer, s, a, r, s′, t; p=1.0f0)::Void
+function store!(buffer::ImageBuffer, s, a, r, s′, t; p=1.0f0)
     buffer.s[:, :, :, buffer.idx] .= s
     buffer.a[:, buffer.idx] .= buffer.actionf(a)
     buffer.r[:, buffer.idx] .= r
@@ -118,16 +118,16 @@ function get_batch!(buffer::ImageBuffer, n::Int)::Tuple{Array{Float32,4},Matrix{
     return buffer.s[:, :, :, idxs], buffer.a[:, idxs], buffer.r[:, idxs], buffer.s′[:, :, :, idxs], buffer.t[:, idxs]
 end
 
-function setp!(buffer::AbstractBuffer, ps::Vector{Float32})::Void
+function setp!(buffer::AbstractBuffer, ps::Vector{Float32})
     buffer.ps[buffer.last_idxs] .= ps
 end
 
-function resetp!(buffer::AbstractBuffer; p::Float32=1.0f0)::Void
+function resetp!(buffer::AbstractBuffer; p::Float32=1.0f0)
     buffer.ps[:] .= p
 end
 
 # helper functions
-function onehot(v, s)
+function onehot(v::Int, s::UnitRange{Int})
     vector = zeros(Float32, size(s))
     vector[findfirst(isequal(v), s)] = 1.0f0
     return vector
